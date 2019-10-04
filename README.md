@@ -4,7 +4,7 @@
 This is a classification task to predict credit card request approval for a customer given other attributes of the customer
 
 ## _Files Description_
-- crx.data: This is the dataset file for the project
+- crx.data: This is the dataset file the project
 You can clone this repository to your local repository to access the data set or download it [here](http://archive.ics.uci.edu/ml/datasets/credit+approval)
 - CreditCardApproval.ipynb: This is the jupyter notebook which includes analysis and modeling
 - CreditCardApproval.py: The python script which includes analysis and modeling
