@@ -1,129 +1,126 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[70]:
+# In[1]:
 
 
-import os
-import pandas as pd
+# Importing package
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-get_ipython().run_line_magic('matplotlib', 'inline')
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import GridSearchCV
 import warnings
 warnings.filterwarnings("ignore")
 
 
-# In[71]:
+# In[2]:
 
 
 col = ['Male', 'Age', 'Debt', 'Married', 'BankCustomer', 'EducationLevel', 'Ethnicity', 'YearsEmployed', 'PriorDefault', 'Employed', 'CreditScore', 'DriversLicense', 'Citizen', 'ZipCode', 'Income', 'Approved']
-CRX_data = pd.read_csv('crx.data', names=col)
+crx_data = pd.read_csv('crx.data', names=col)
 
 
-# In[72]:
+# In[3]:
 
 
 # Printing data info and sample
+print(crx_data.describe(), "\n\n")
+print(crx_data.info())
+crx_data.sample(5)
 
-print(CRX_data.describe(), "\n\n")
-print(CRX_data.info())
-CRX_data.sample(5)
 
-
-# In[75]:
+# In[4]:
 
 
 cols = ['Male', 'Married', 'BankCustomer', 'EducationLevel', 'Ethnicity', 'PriorDefault', 'Employed', 'DriversLicense', 'Citizen']
 for col in cols:
-    print('Unique values in {}: {}'.format(col, CRX_data[col].unique()))
+    print('Unique values in {}: {}'.format(col, crx_data[col].unique()))
 
 
-# In[76]:
+# In[5]:
 
 
-# Replacing missing values imputed as '?' to Nan and changing age and zipcode feature data type to float and int respectively
+# Replacing missing values imputed as '?' to Nan and...
+# ..changing age and zipcode feature data type to float and int respectively
+crx_data = crx_data.replace(['?'], np.nan)
+crx_data.Age = crx_data.Age.astype('float')
 
-CRX_data = CRX_data.replace(['?'], np.nan)
-CRX_data.Age = CRX_data.Age.astype('float')
 
-
-# In[77]:
+# In[6]:
 
 
 # Checking for missing values
-
-CRX_data.isnull().sum().sort_values(ascending=False)
-
-
-# In[78]:
+crx_data.isnull().sum().sort_values(ascending=False)
 
 
-CRX_data.fillna(CRX_data.mean(), inplace=True)  #Imputing missng values of numeric features with mean values
-CRX_data.fillna('ffil', inplace=True)  # Imputing missing values of categorical feature
-CRX_data.isnull().sum() # Checking null value(s)
+# In[7]:
 
 
-# In[79]:
+crx_data.fillna(crx_data.mean(), inplace=True)  # Imputing missng values of numeric features with mean values
+crx_data.fillna('ffil', inplace=True)  # Imputing missing values of categorical feature
+crx_data.isnull().sum() # Checking null value(s)
+
+
+# In[8]:
 
 
 # Visualising data distribution
-
 def plotDistPlot(col):
     """Flexibly plot a univariate distribution of observation"""
     sns.distplot(col)
     plt.show()
-plotDistPlot(CRX_data['Age'])
-plotDistPlot(CRX_data['Debt'])
-plotDistPlot(CRX_data['YearsEmployed'])
-plotDistPlot(CRX_data['CreditScore'])
-plotDistPlot(CRX_data['Income'])
+plotDistPlot(crx_data['Age'])
+plotDistPlot(crx_data['Debt'])
+plotDistPlot(crx_data['YearsEmployed'])
+plotDistPlot(crx_data['CreditScore'])
+plotDistPlot(crx_data['Income'])
 
 
-# In[80]:
+# In[9]:
 
 
 # Applying logarithmic scale to correct skewness
-num_cols = list(CRX_data.select_dtypes(exclude='object'))
-CRX_data[num_cols] = CRX_data[num_cols].apply(lambda x: np.log(x + 1))
+num_cols = list(crx_data.select_dtypes(exclude='object'))
+crx_data[num_cols] = crx_data[num_cols].apply(lambda x: np.log(x + 1))
 
 
-# In[81]:
+# In[10]:
 
 
 # check for approved
-sns.countplot(data = CRX_data, x = 'Approved')
+sns.countplot(data = crx_data, x = 'Approved')
 plt.show()
 
 
-# In[82]:
+# In[11]:
 
 
 #converting non-numeric to numeric values
-from sklearn.preprocessing import LabelEncoder
 le = LabelEncoder()
-# # Looping for each object type column
-#Using label encoder to convert into numeric types
-for col in CRX_data:
-    if CRX_data[col].dtypes=='object':
-        CRX_data[col]=le.fit_transform(CRX_data[col])
+for col in crx_data:
+    if crx_data[col].dtypes=='object':
+        crx_data[col]=le.fit_transform(crx_data[col])
 
 
-# In[83]:
+# In[12]:
 
 
 # Removing the feature which are not important and converting to NumPy array
-CRX_data = CRX_data.drop(['DriversLicense', 'ZipCode'], axis=1)
-CRX_data = CRX_data.values
+crx_data = crx_data.drop(['DriversLicense', 'ZipCode'], axis=1)
+crx_data = crx_data.values
 
 
-# In[84]:
+# In[13]:
 
-
-from sklearn.model_selection import train_test_split
 
 # Creating new variable to input features and labels
-X,y = CRX_data[:,0:13] , CRX_data[:,13]
+X,y = crx_data[:,0:13] , crx_data[:,13]
 
 # Spliting the data into training and testing sets
 X_train, X_test, y_train, Y_test = train_test_split(X,
@@ -132,11 +129,8 @@ X_train, X_test, y_train, Y_test = train_test_split(X,
                                                     random_state=1)
 
 
-# In[85]:
+# In[14]:
 
-
-# Import MinMaxScaler
-from sklearn.preprocessing import MinMaxScaler
 
 # Scaling X_train and X_test
 scaler = MinMaxScaler(feature_range=(0, 1))
@@ -144,22 +138,16 @@ rescaledX_train = scaler.fit_transform(X_train)
 rescaledX_test = scaler.transform(X_test)
 
 
-# In[86]:
+# In[15]:
 
-
-# Import LogisticRegression
-from sklearn.linear_model import LogisticRegression
 
 # Fitting logistic regression with default parameter values
 logreg = LogisticRegression()
 logreg.fit(rescaledX_train, y_train)
 
 
-# In[87]:
+# In[16]:
 
-
-# Import confusion_matrix
-from sklearn.metrics import confusion_matrix
 
 # Using the trained model to predict instances from the test set
 y_pred = logreg.predict(rescaledX_test)
@@ -171,11 +159,8 @@ print("Logistic regression classifier has accuracy of: ", logreg.score(rescaledX
 confusion_matrix(Y_test, y_pred)
 
 
-# In[88]:
+# In[17]:
 
-
-# Import GridSearchCV
-from sklearn.model_selection import GridSearchCV
 
 # Define the grid of values for tol and max_iter
 tol = [0.01, 0.001, 0.0001]
@@ -188,20 +173,20 @@ param_grid = dict(tol=tol, max_iter=max_iter)
 grid_model = GridSearchCV(estimator=LogisticRegression(), param_grid=param_grid, cv=5)
 
 # Calculating and summarizing the final results
-grid_model_result = grid_model.fit(rescaledX, y)
+grid_model_result = grid_model.fit(rescaledX_train, y_train)
 best_score, best_params = grid_model_result.best_score_, grid_model_result.best_params_ 
 print("Best: %f using %s" %  (best_score, best_params))
 
 
-# In[89]:
+# In[18]:
 
 
 # Fitting logistic regression with best parameter values from gridsearch
-logreg2 = LogisticRegression(max_iter=100, tol=0.01)
+logreg2 = LogisticRegression(max_iter=100, tol=0.001)
 logreg2.fit(rescaledX_train, y_train)
 
 
-# In[90]:
+# In[19]:
 
 
 # Using the trained model to predict instances from the test set
